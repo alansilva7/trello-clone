@@ -20,6 +20,11 @@ const inicialColumns = [
     id: "456",
     items: [],
   },
+  {
+    name: "Done",
+    id: "789",
+    items: [],
+  },
 ];
 
 function App() {
@@ -27,37 +32,52 @@ function App() {
 
   const onDragEnd = (result) => {
     console.log(result);
-    let sourceColumnItems = columns[0].items;
-    let draggableItem = {};
 
-    for (let i in sourceColumnItems) {
-      if (sourceColumnItems[i].id === result.draggableId) {
-        draggableItem = sourceColumnItems[i];
+    let sourceColumnItems = [];
+    let destinationColumnItems = [];
+    let draggedItem = {};
+
+    let sourceColumnId = 0;
+    let destinationColumnId = 0;
+
+    for (let i in columns) {
+      if (columns[i].id == result.source.droppableId) {
+        sourceColumnItems = columns[i].items;
+        sourceColumnId = i;
+      } else if (columns[i].id == result.destination.droppableId) {
+        destinationColumnItems = columns[i].items;
+        destinationColumnId = i;
       }
     }
 
-    // Excluir o objeto arrastado;
+    for (let i in sourceColumnItems) {
+      if (sourceColumnItems[i].id == result.draggableId) {
+        draggedItem = sourceColumnItems[i];
+      }
+    }
+
     let filteredSourceColumnItems = sourceColumnItems.filter(
       (item) => item.id != result.draggableId
     );
 
-    // Adicionar o mesmo na nova posição;
-    filteredSourceColumnItems.splice(
-      result.destination.index,
-      0,
-      draggableItem
-    );
-    console.log(filteredSourceColumnItems);
+    if (result.source.droppableId == result.destination.droppableId) {
+      filteredSourceColumnItems.splice(
+        result.destination.index,
+        0,
+        draggedItem
+      );
 
-    // Mudar o state
-    let columnsCopy = JSON.parse(JSON.stringify(columns));
-    columnsCopy[0].items = filteredSourceColumnItems;
-    setColumns(columnsCopy);
+      let columnsCopy = JSON.parse(JSON.stringify(columns));
+      columnsCopy[sourceColumnId].items = filteredSourceColumnItems;
+      setColumns(columnsCopy);
+    } else {
+      destinationColumnItems.splice(result.destination.index, 0, draggedItem);
 
-    // columns[0].items = filteredSourceColumnItems;
-    // let columnsCopy = columns;
-    // columnsCopy.items = filteredSourceColumnItems;
-    // // setColumns(columnsCopy);
+      let columnsCopy = JSON.parse(JSON.stringify(columns));
+      columnsCopy[sourceColumnId].items = filteredSourceColumnItems;
+      columnsCopy[destinationColumnId].items = destinationColumnItems;
+      setColumns(columnsCopy);
+    }
   };
 
   return (
@@ -116,6 +136,15 @@ function App() {
       </DragDropContext>
     </div>
   );
+}
+
+function main() {
+  try {
+    const testFunction = new App();
+    throw new Error(testFunction);
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 export default App;
